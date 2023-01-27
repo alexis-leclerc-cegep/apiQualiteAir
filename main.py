@@ -59,11 +59,19 @@ async def get_logs():
 
 @app.get("/getLatestCO2")
 async def get_latest_co2():
-    result = cur.execute('select * from logs order by created_at desc limit 1')
-    return result.fetchAll()
+    result = cur.execute("select message, created_at from logs "
+                         "where topic = 'alexis/co2' "
+                         "order by created_at desc "
+                         "limit 1")
+    column_names = [desc[0] for desc in cur.description]
+    return zip(column_names, result.fetchone())
 
 
-@app.get("/getUsers")
-async def get_users():
-    result = cur.execute('select * from logs order by created_at desc limit 1')
-    return result.fetchall()
+@app.get("/getLatestTVOC")
+async def get_latest_tvoc():
+    result = cur.execute("select message, created_at from logs "
+                         "where topic = 'alexis/tvoc' "
+                         "order by created_at desc "
+                         "limit 1")
+    column_names = [desc[0] for desc in cur.description]
+    return zip(column_names, result.fetchone())
