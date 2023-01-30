@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import sqlite3
+import uvicorn
 from fastapi_mqtt import FastMQTT, MQTTConfig
 
 app = FastAPI()
@@ -59,6 +60,7 @@ async def get_logs():
 
 @app.get("/getLatestCO2")
 async def get_latest_co2():
+    print("getLatestCO2")
     result = cur.execute("select message, created_at from logs "
                          "where topic = 'alexis/co2' "
                          "order by created_at desc "
