@@ -35,6 +35,7 @@ def disconnect(client, packet, exc=None):
     print("Disconnected")
 
 
+
 @mqtt.on_subscribe()
 def subscribe(client, mid, qos, properties):
     print("subscribed", client, mid, qos, properties)
