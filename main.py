@@ -1,11 +1,10 @@
 from fastapi import FastAPI
 import sqlite3
-import uvicorn
 from fastapi_mqtt import FastMQTT, MQTTConfig
 
 app = FastAPI()
 
-mqtt_config = MQTTConfig(host="172.16.7.162",
+mqtt_config = MQTTConfig(host="172.16.5.101",
                          port=1883)
 
 mqtt = FastMQTT(config=mqtt_config)
@@ -24,6 +23,7 @@ def connect(client, flags, rc, properties):
 
 @mqtt.subscribe("alexis/co2")
 @mqtt.subscribe("alexis/tvoc")
+@mqtt.subscribe("alexis/co")
 async def message_to_topic(client, topic, payload, qos, properties):
     print("Received message to specific topic: ", topic, payload.decode(), qos, properties)
     cur.execute("insert into logs (message, topic, created_at) values (?, ?, DATETIME())", [payload.decode(), topic])
@@ -45,12 +45,6 @@ def subscribe(client, mid, qos, properties):
 async def root():
     return {"message": "Hello World"}
 
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    if name == 'joe':
-        return {"message": "Hello Joe mama"}
-    return {"message": f"Hello {name}, comment qui va?"}
 
 
 @app.get("/getLogs")
