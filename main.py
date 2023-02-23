@@ -44,7 +44,7 @@ def subscribe(client, mid, qos, properties):
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Bienvenue à l'API de Qualité de l'Air"}
 
 
 
