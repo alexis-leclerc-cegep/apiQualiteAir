@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import sqlite3
+from datetime import datetime
 from fastapi_mqtt import FastMQTT, MQTTConfig
 
 app = FastAPI()
@@ -26,7 +27,7 @@ def connect(client, flags, rc, properties):
 @mqtt.subscribe("alexis/co")
 async def message_to_topic(client, topic, payload, qos, properties):
     print("Received message to specific topic: ", topic, payload.decode(), qos, properties)
-    cur.execute("insert into logs (message, topic, created_at) values (?, ?, DATETIME())", [payload.decode(), topic])
+    cur.execute("insert into logs (message, topic, created_at) values (?, ?, ?)", [payload.decode(), topic, datetime.now()])
     con.commit()
 
 
