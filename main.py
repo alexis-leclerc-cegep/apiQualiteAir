@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import sqlite3
 from datetime import datetime
 from fastapi_mqtt import FastMQTT, MQTTConfig
+import message
 
 app = FastAPI()
 
@@ -73,3 +74,11 @@ async def get_latest_tvoc():
                          "limit 1")
     column_names = [desc[0] for desc in cur.description]
     return zip(column_names, result.fetchone())
+
+@app.post("/addToArchive")
+async def add_to_archive(leMessage: message.Message):
+    print(leMessage.data)
+    print(leMessage)
+    cur.execute("insert into logs (message, topic, created_at) values (?, ?, ?)", [leMessage.data, leMessage.data, datetime.now()])
+    con.commit()
+    return leMessage
