@@ -1,10 +1,18 @@
-from fastapi import FastAPI
+import hashlib
 import sqlite3
+from dotenv import load_dotenv
 from datetime import datetime
+
+from fastapi import FastAPI, HTTPException
 from fastapi_mqtt import FastMQTT, MQTTConfig
+from fastapi.responses import JSONResponse
+
 import message
+import user
 
 app = FastAPI()
+
+load_dotenv()
 
 mqtt_config = MQTTConfig(host="172.16.5.101",
                          port=1883)
@@ -49,6 +57,15 @@ async def root():
 
 
 
+
+@app.post("/addToArchive")
+async def add_to_archive(leMessage: message.Message):
+    print(leMessage.data)
+    print(leMessage)
+    cur.execute("insert into logs (message, topic, created_at) values (?, ?, ?)", [leMessage.data, leMessage.data, datetime.now()])
+    con.commit()
+    return leMessage
+
 @app.get("/getLogs")
 async def get_logs():
     result = cur.execute('select * from logs')
@@ -75,10 +92,21 @@ async def get_latest_tvoc():
     column_names = [desc[0] for desc in cur.description]
     return zip(column_names, result.fetchone())
 
-@app.post("/addToArchive")
-async def add_to_archive(leMessage: message.Message):
-    print(leMessage.data)
-    print(leMessage)
-    cur.execute("insert into logs (message, topic, created_at) values (?, ?, ?)", [leMessage.data, leMessage.data, datetime.now()])
-    con.commit()
-    return leMessage
+@app.post("/login")
+async def login(utilisateur: user.User):
+    # return jwt token
+    try:
+
+
+@app.post("/createUser")
+async def create_user(utilisateur: user.User):
+    try:
+        username = utilisateur.username
+        password = utilisateur.password
+        hashed = hashlib.sha256(password.encode()).hexdigest()
+        cur.execute("insert into users (username, password) values (?, ?)", [username, hashed])
+        con.commit()
+        # return that it worked
+        return JSONResponse(status_code=200, content={"message": "User created"})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
