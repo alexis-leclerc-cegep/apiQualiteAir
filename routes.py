@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 import hashlib
 import os
@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
 from models import message, user
+from auth.bearer import JWTBearer
 
 load_dotenv()
 
@@ -21,12 +22,12 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("/", dependencies=[Depends(JWTBearer())])
 async def root():
     return {"message": "Bienvenue à l'API de Qualité de l'Air"}
 
 
-@router.post("/addToArchive")
+@router.post("/addToArchive", dependencies=[Depends(JWTBearer())])
 async def add_to_archive(leMessage: message.Message):
     print(leMessage.data)
     print(leMessage)
@@ -35,13 +36,13 @@ async def add_to_archive(leMessage: message.Message):
     return leMessage
 
 
-@router.get("/getLogs")
+@router.get("/getLogs", dependencies=[Depends(JWTBearer())])
 async def get_logs():
     result = cur.execute('select * from logs')
     return result.fetchall()
 
 
-@router.get("/getLatestCO2")
+@router.get("/getLatestCO2", dependencies=[Depends(JWTBearer())])
 async def get_latest_co2():
     print("getLatestCO2")
     result = cur.execute("select message, created_at from logs "
@@ -52,7 +53,7 @@ async def get_latest_co2():
     return zip(column_names, result.fetchone())
 
 
-@router.get("/getLatestTVOC")
+@router.get("/getLatestTVOC", dependencies=[Depends(JWTBearer())])
 async def get_latest_tvoc():
     result = cur.execute("select message, created_at from logs "
                          "where topic = 'alexis/tvoc' "
@@ -61,7 +62,8 @@ async def get_latest_tvoc():
     column_names = [desc[0] for desc in cur.description]
     return zip(column_names, result.fetchone())
 
-@router.post("/login")
+
+@router.get("/login")
 async def login(utilisateur: user.User):
     # return jwt token
     try:
@@ -70,7 +72,7 @@ async def login(utilisateur: user.User):
         
         # Hash password to compare with stored hash
         hashed_password = get_password_hash(password)
-        
+
         # Query database for user credentials
         query = "SELECT username, password FROM users WHERE username = ?"
         result = cur.execute(query, [username]).fetchone()
@@ -97,6 +99,7 @@ def verify_password(plain_password, hashed_password):
     print(plain_password)
     print(hashed_password)
     return get_password_hash(plain_password) == hashed_password
+
 
 @router.post("/createUser")
 async def create_user(utilisateur: user.User):
