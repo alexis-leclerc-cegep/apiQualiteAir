@@ -27,6 +27,11 @@ async def root():
     return {"message": "Bienvenue à l'API de Qualité de l'Air"}
 
 
+@router.get("/brokerIp", dependencies=[Depends(JWTBearer())])
+async def broker_ip():
+    return {"ip": "172.16.5.101"}
+
+
 @router.post("/addToArchive", dependencies=[Depends(JWTBearer())])
 async def add_to_archive(leMessage: message.Message):
     print(leMessage.data)
