@@ -68,7 +68,7 @@ async def get_latest_tvoc():
     return zip(column_names, result.fetchone())
 
 
-@router.get("/login")
+@router.post("/login")
 async def login(utilisateur: user.User):
     # return jwt token
     try:
